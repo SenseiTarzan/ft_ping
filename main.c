@@ -8,8 +8,6 @@
 #include "src/icmp/packet/echo_request_packet.h"
 #include "src/packet_processors/packet_processors.h"
 
-
-
 int main(void) {
     init_packet_processors_icmp();
     t_echo_request *packet = echo_request_new(5, 6);
