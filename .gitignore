@@ -1,0 +1,82 @@
+# --- Claude Code ---
+.claude/
+
+.mcp.json
+
+# --- IDE ---
+.idea/
+.run/
+
+# --- CMake ---
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+CMakeUserPresets.json
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+Testing/
+_deps/
+build/
+cmake-build-*/
+compile_commands.json
+
+# --- Make / Ninja ---
+Makefile
+.ninja_deps
+.ninja_log
+build.ninja
+rules.ninja
+
+# --- Objets, bibliotheques, binaires ---
+*.o
+*.obj
+*.ko
+*.elf
+*.lo
+*.slo
+*.a
+*.la
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.out
+*.app
+*.i
+*.s
+*.su
+*.idb
+*.pdb
+*.gch
+*.pch
+
+# --- Dependances generees par le compilateur ---
+*.d
+
+# --- Couverture / profilage ---
+*.gcno
+*.gcda
+*.gcov
+coverage/
+*.profraw
+*.profdata
+callgrind.out.*
+massif.out.*
+perf.data*
+
+# --- Rapports de sanitizers / valgrind ---
+*.asan
+*.ubsan
+*.log
+
+# --- Divers ---
+core
+core.*
+vgcore.*
+*.swp
+*.swo
+*~
+.DS_Store

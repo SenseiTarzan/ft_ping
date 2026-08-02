@@ -1,0 +1,10 @@
+# Suppressions valgrind du projet.
+#
+# Fichier volontairement vide : il n'existe que pour que
+# --suppressions=valgrind.supp soit toujours valide, y compris quand aucune
+# suppression n'est necessaire. Valgrind refuse de demarrer si le chemin
+# n'existe pas.
+#
+# Pour ajouter une entree, relancer avec --gen-suppressions=all et recopier
+# le bloc affiche ici. N'y mettre que du bruit venant de la libc ou d'une
+# dependance : une fuite du projet doit etre corrigee, pas masquee.
