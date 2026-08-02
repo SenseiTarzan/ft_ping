@@ -209,6 +209,23 @@ sur les binaires nus.
 
 ---
 
+## Note sur l'utilisation de l'IA
+
+Autant le dire clairement : une IA a servi sur deux points precis de ce
+projet.
+
+- **Ce README** a ete redige avec son aide, a partir du code et des choix
+  d'implementation existants.
+- **La documentation Doxygen des en-tetes** est ecrite en anglais, qui n'est
+  pas ma langue forte. L'IA a servi a corriger les fautes et a reformuler les
+  commentaires pour qu'ils restent lisibles.
+
+En revanche, la conception et le code du projet (le decoupage en trois
+couches, `binary_stream`, le registre de processeurs et la partie ICMP) sont
+les miens, ainsi que les choix expliques plus haut.
+
+---
+
 ## Reste a faire (partie 2)
 
 - ouverture de la socket brute et gestion des privileges
