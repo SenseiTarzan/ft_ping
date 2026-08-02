@@ -54,7 +54,6 @@ void register_packet_processor(const int id,
     void (*destructor)(void * ),
     bool (*handler)(void *)) {
     if (!is_valid_packet_processor_id(id)) {
-        fprintf(stderr,"ERROR: packet processor id out of range\n");
         return;
     }
     packet_processor[id].pre_serializer = pre_serializer;
@@ -74,7 +73,6 @@ void register_packet_processor(const int id,
 
 void unregister_packet_processor(const int id) {
     if (!is_valid_packet_processor_id(id)) {
-        fprintf(stderr,"ERROR: packet processor id out of range\n");
         return;
     }
     packet_processor[id].pre_serializer = NULL;
@@ -113,7 +111,6 @@ static void packet_processor_destroy(const t_packet_processor *processor, void *
 
 t_packet_processor* get_packet_processor(const int id) {
     if (!is_valid_packet_processor_id(id)) {
-        fprintf(stderr,"ERROR: packet processor id out of range\n");
         return NULL;
     }
     return &packet_processor[id];
@@ -203,7 +200,6 @@ bool packet_processor_handler(const int id, void *packet) {
         return false;
     }
     if (packet_processor->handler == NULL) {
-        fprintf(stderr, "ERROR: packet processor(%i): handler is NULL\n", id);
         return false;
     }
     /* Le paquet appartient au module a partir d'ici : il est detruit que le
