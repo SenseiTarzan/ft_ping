@@ -77,11 +77,37 @@ void unregister_packet_processor(const int id) {
         fprintf(stderr,"ERROR: packet processor id out of range\n");
         return;
     }
-    packet_processor[id].handler = NULL;
     packet_processor[id].pre_serializer = NULL;
     packet_processor[id].serializer = NULL;
     packet_processor[id].post_serializer = NULL;
+
+    packet_processor[id].constructor = NULL;
+
+    packet_processor[id].pre_deserializer = NULL;
     packet_processor[id].deserializer = NULL;
+
+    packet_processor[id].destructor = NULL;
+
+    packet_processor[id].handler = NULL;
+}
+
+/**
+ * Release a packet owned by a processor.
+ * @param processor processor the packet belongs to
+ * @param packet packet to release, NULL tolerated
+ *
+ * Falls back on free() when the processor declares no destructor, which is
+ * what a processor whose constructor is a plain malloc() expects.
+ */
+static void packet_processor_destroy(const t_packet_processor *processor, void *packet) {
+    if (packet == NULL) {
+        return;
+    }
+    if (processor->destructor != NULL) {
+        processor->destructor(packet);
+    }else {
+        free(packet);
+    }
 }
 
 
@@ -95,7 +121,7 @@ t_packet_processor* get_packet_processor(const int id) {
 
 t_packet_processor_status packet_processor_serialize(const int id, t_binary_stream *stream, const void *packet) {
     if (stream == NULL) {
-        return PACKET_PROCESSOR_STATUS_FAILURE_MALLOC;
+        return PACKET_PROCESSOR_STATUS_FAILURE_NO_DATA;
     }
     if (!is_valid_packet_processor_id(id)) {
         return PACKET_PROCESSOR_STATUS_FAILED;
@@ -112,7 +138,6 @@ t_packet_processor_status packet_processor_serialize(const int id, t_binary_stre
         }
     }
     if (packet_processor->serializer == NULL) {
-        printf("ERROR: packet processor(%i): serializer is NULL\n", id);
         return PACKET_PROCESSOR_STATUS_FAILURE_NOT_IMPLEMENTED;
     }
     status = packet_processor->serializer(stream, packet);
@@ -125,12 +150,15 @@ t_packet_processor_status packet_processor_serialize(const int id, t_binary_stre
             return status;
         }
     }
+    return PACKET_PROCESSOR_STATUS_OK;
 }
 
 void *packet_processor_deserializer(t_binary_stream *stream) {
-    if (stream == NULL) {
+    if (stream == NULL || stream->data == NULL || stream->capacity == 0) {
         return NULL;
     }
+    /* L'octet d'en-tete porte l'id du processeur. Il n'est pas consomme :
+     * c'est au pre_deserializer d'avancer le curseur. */
     const int id = stream->data[0];
     if (!is_valid_packet_processor_id(id)) {
         return NULL;
@@ -150,21 +178,17 @@ void *packet_processor_deserializer(t_binary_stream *stream) {
     if (packet_processor->pre_deserializer != NULL) {
         status = packet_processor->pre_deserializer(stream, packet);
         if (packet_processor_status_is_failed(status)) {
-            if (packet_processor->destructor != NULL) {
-                packet_processor->destructor(packet);
-            }else {
-                free(packet);
-            }
+            packet_processor_destroy(packet_processor, packet);
             return NULL;
         }
     }
+    if (packet_processor->deserializer == NULL) {
+        packet_processor_destroy(packet_processor, packet);
+        return NULL;
+    }
     status = packet_processor->deserializer(stream, packet);
     if (packet_processor_status_is_failed(status)) {
-        if (packet_processor->destructor != NULL) {
-            packet_processor->destructor(packet);
-        }else {
-            free(packet);
-        }
+        packet_processor_destroy(packet_processor, packet);
         return NULL;
     }
     return packet;
@@ -178,11 +202,13 @@ bool packet_processor_handler(const int id, void *packet) {
     if (packet_processor == NULL) {
         return false;
     }
-    t_packet_processor_status status = PACKET_PROCESSOR_STATUS_OK;
-    return packet_processor->handler(packet);
-    if (packet_processor->destructor != NULL) {
-        packet_processor->destructor(packet);
-    }else {
-        free(packet);
+    if (packet_processor->handler == NULL) {
+        fprintf(stderr, "ERROR: packet processor(%i): handler is NULL\n", id);
+        return false;
     }
+    /* Le paquet appartient au module a partir d'ici : il est detruit que le
+     * handler l'accepte ou non. */
+    const bool handled = packet_processor->handler(packet);
+    packet_processor_destroy(packet_processor, packet);
+    return handled;
 }
