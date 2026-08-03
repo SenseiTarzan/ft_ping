@@ -40,7 +40,7 @@ const char *packet_processor_status_message(const t_packet_processor_status stat
     }
 }
 
-static bool is_valid_packet_processor_id(const int id) {
+bool is_valid_packet_processor_id(const int id) {
     return id >= 0 && (size_t)id < PACKET_PROCESSOR_COUNT;
 }
 
@@ -97,7 +97,7 @@ void unregister_packet_processor(const int id) {
  * Falls back on free() when the processor declares no destructor, which is
  * what a processor whose constructor is a plain malloc() expects.
  */
-static void packet_processor_destroy(const t_packet_processor *processor, void *packet) {
+void packet_processor_destroy(const t_packet_processor *processor, void *packet) {
     if (packet == NULL) {
         return;
     }
@@ -195,7 +195,7 @@ bool packet_processor_handler(const int id, void *packet) {
     if (!is_valid_packet_processor_id(id)) {
         return false;
     }
-    const t_packet_processor* packet_processor = get_packet_processor(id);
+    const t_packet_processor *packet_processor = get_packet_processor(id);
     if (packet_processor == NULL) {
         return false;
     }

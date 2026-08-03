@@ -9,4 +9,6 @@
 
 void init_packet_processors_icmp(void);
 
+bool packet_processor_icmp_handler(void *packet);
+
 #endif //FT_PING_PACKET_PROCESSORS_ICMP_H

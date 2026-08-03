@@ -53,6 +53,14 @@ bool handler_echo_reply_packet(void *packet) {
     return true;
 }
 
+bool packet_processor_icmp_handler(void *packet) {
+    if (packet == NULL) {
+        return false;
+    }
+    const t_header_icmp *header = packet;
+    return packet_processor_handler(header->type, packet);
+}
+
 
 void init_packet_processors_icmp(void) {
     register_packet_processor(8, &serialize_header_icmp, &serializer_echo_request, &serializer_checksum_icmp, NULL,NULL, NULL, NULL, NULL);

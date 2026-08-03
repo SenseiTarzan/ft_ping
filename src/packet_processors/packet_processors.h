@@ -59,6 +59,8 @@ bool packet_processor_status_is_success(t_packet_processor_status status);
  */
 const char *packet_processor_status_message(t_packet_processor_status status);
 
+bool is_valid_packet_processor_id(int id);
+
 void register_packet_processor(int id,
     t_packet_processor_status (*pre_serializer)(t_binary_stream *, const void *),
     t_packet_processor_status (*serializer)(t_binary_stream *, const void *),
@@ -75,4 +77,5 @@ t_packet_processor* get_packet_processor(int id);
 t_packet_processor_status packet_processor_serialize(int id, t_binary_stream *stream, const void *packet);
 void *packet_processor_deserializer(t_binary_stream *stream);
 bool packet_processor_handler(int id, void *packet);
+void packet_processor_destroy(const t_packet_processor *processor, void *packet);
 #endif //FT_PING_PACKET_PROCESSORS_H
