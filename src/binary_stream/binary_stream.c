@@ -85,6 +85,7 @@ static void init_methods_on_binary_stream(t_binary_stream *stream) {
     stream->methods.print = &binary_stream_print;
     stream->methods.reset = &binary_stream_reset;
     stream->methods.copy = &binary_stream_copy;
+    stream->methods.slice = &binary_stream_slice;
 
     stream->methods.write_char = &binary_stream_write_char;
     stream->methods.write_char_le = &binary_stream_write_char_le;
@@ -195,6 +196,34 @@ t_binary_stream *binary_stream_copy(t_binary_stream *stream) {
     copy->index = 0;
     init_methods_on_binary_stream(copy);
     return copy;
+}
+
+t_binary_stream *binary_stream_slice(t_binary_stream *stream, size_t start, size_t length) {
+    if (start > length) {
+        return NULL;
+    }
+    if (start > stream->index) {
+        return NULL;
+    }
+    if (start + length > stream->capacity) {
+        return NULL;
+    }
+    t_binary_stream *slice = malloc(sizeof(t_binary_stream));
+    if (slice == NULL) {
+        return NULL;
+    }
+    slice->endian = stream->endian;
+    slice->data = (uint8_t *)malloc(length);
+    if (slice->data == NULL) {
+        free(slice);
+        return NULL;
+    }
+    memmove(slice->data, stream->data + start, length);
+    slice->capacity = length;
+    slice->max_capacity = stream->max_capacity;
+    slice->index = 0;
+    init_methods_on_binary_stream(slice);
+    return slice;
 }
 
 void binary_stream_reset(t_binary_stream *stream) {

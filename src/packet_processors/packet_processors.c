@@ -154,8 +154,6 @@ void *packet_processor_deserializer(t_binary_stream *stream) {
     if (stream == NULL || stream->data == NULL || stream->capacity == 0) {
         return NULL;
     }
-    /* L'octet d'en-tete porte l'id du processeur. Il n'est pas consomme :
-     * c'est au pre_deserializer d'avancer le curseur. */
     const int id = stream->data[0];
     if (!is_valid_packet_processor_id(id)) {
         return NULL;

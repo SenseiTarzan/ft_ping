@@ -21,6 +21,11 @@ enum e_packet_processor_status {
     PACKET_PROCESSOR_STATUS_FAILURE_NOT_IMPLEMENTED
 };
 
+enum e_packet_network_type {
+    PACKET_NETWORK_TYPE_UNKNOWN = -1,
+    PACKET_NETWORK_TYPE_ETHERNET,
+};
+
 /**
  * Alias over enum e_packet_processor_status, so callers can write
  * t_packet_processor_status without repeating the @c enum keyword.
@@ -28,7 +33,7 @@ enum e_packet_processor_status {
 typedef enum e_packet_processor_status t_packet_processor_status;
 
 struct s_packet_processor {
-    t_packet_processor_status (*pre_serializer)( t_binary_stream *, const void *);
+    t_packet_processor_status (*pre_serializer)(t_binary_stream *, const void *);
     t_packet_processor_status (*serializer)(t_binary_stream *, const void *);
     t_packet_processor_status (*post_serializer)(t_binary_stream *, const void *);
     void * (*constructor)();
@@ -37,6 +42,8 @@ struct s_packet_processor {
     void (*destructor)(void *);
     bool (*handler)(void *);
 };
+
+
 
 /**
  * Tell whether a status reports a failure.

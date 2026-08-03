@@ -1,12 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "src/icmp/binary_stream_icmp.h"
 #include "src/icmp/packet_processors_icmp.h"
 #include "src/icmp/packet/echo_reply_packet.h"
 #include "src/icmp/packet/echo_request_packet.h"
 #include "src/packet_processors/packet_processors.h"
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
+#include <netinet/ip_icmp.h>
 
 int main(void) {
     init_packet_processors_icmp();
@@ -21,22 +27,89 @@ int main(void) {
     packet_processor_serialize(8, stream, packet);
     free(packet);
     stream->methods.print(stream);
-    t_binary_stream *copy = stream->methods.copy(stream);
-    if (copy == NULL) {
-        binary_stream_free(stream);
+    // Création du socket raw ICMP
+    int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+    if (sockfd < 0) {
+        perror("socket (besoin de root)");
+        free(packet);
         return 1;
     }
-    copy->data[0] = 0;
-    binary_stream_icmp_write_checksum(copy, 2, copy->capacity);
-    copy->methods.print(copy);
-    t_echo_reply *packet_decode = packet_processor_deserializer(copy);
+
+
+    // Adresse de destination
+    struct sockaddr_in dest_addr;
+    memset(&dest_addr, 0, sizeof(dest_addr));
+    dest_addr.sin_family = AF_INET;
+    inet_pton(AF_INET, "8.8.8.8", &dest_addr.sin_addr);
+
+    // Envoi du paquet
+    ssize_t sent = sendto(sockfd, stream->data, stream->capacity, 0,
+                          (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+
+    if (sent < 0) {
+        perror("sendto");
+    } else {
+        printf("Paquet ICMP envoyé : %zd octets vers %s\n", sent, "8.8.8.8");
+    }
+
+    uint8_t recv_buf[1500];
+    struct sockaddr_in from_addr;
+    socklen_t from_len = sizeof(from_addr);
+    ssize_t n = recvfrom(sockfd, recv_buf, sizeof(recv_buf), 0,
+                             (struct sockaddr *)&from_addr, &from_len);
+
+
+    struct ip *ip_hdr = (struct ip *)recv_buf;
+    size_t ip_hdr_len = ip_hdr->ip_hl * 4;  // ip_hl en mots de 32 bits
+
+    // Vérifier que le protocole est bien ICMP
+    if (ip_hdr->ip_p != IPPROTO_ICMP) {
+        return 2;  // Ignorer les paquets non-ICMP
+    }
+
+    // Pointer vers l'en-tête ICMP (après l'en-tête IP)
+    uint8_t *icmp_ptr = recv_buf + ip_hdr_len;
+    size_t icmp_len = n - ip_hdr_len;
+
+    t_binary_stream *test = create_binary_stream(icmp_ptr, icmp_len, BINARY_STREAM_ENDIAN_BIG);
+    if (test == NULL) {
+        return 1;
+    }
+    test->methods.print(test);
+    t_echo_reply *packet_decode = packet_processor_deserializer(test);
     if (packet_decode == NULL) {
         binary_stream_free(stream);
-        binary_stream_free(copy);
+        binary_stream_free(test);
         return 1;
     }
     packet_processor_icmp_handler(packet_decode);
-    binary_stream_free(stream);
-    binary_stream_free(copy);
+    binary_stream_free(test);
+    close(sockfd);
+/*
+
+    t_binary_stream *slice = stream->methods.slice(stream, 2, 4);
+        if (slice == NULL) {
+            return 1;
+        }
+        slice->methods.print(slice);
+        binary_stream_free(slice);
+        t_binary_stream *copy = stream->methods.copy(stream);
+        if (copy == NULL) {
+            binary_stream_free(stream);
+            return 1;
+        }
+        copy->data[0] = 0;
+        binary_stream_icmp_write_checksum(copy, 2, copy->capacity);
+        copy->methods.print(copy);
+        t_echo_reply *packet_decode = packet_processor_deserializer(copy);
+        if (packet_decode == NULL) {
+            binary_stream_free(stream);
+            binary_stream_free(copy);
+            return 1;
+        }
+        packet_processor_icmp_handler(packet_decode);
+        binary_stream_free(stream);
+        binary_stream_free(copy);
+ */
     return 0;
 }

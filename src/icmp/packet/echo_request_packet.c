@@ -31,11 +31,11 @@ t_packet_processor_status serializer_echo_request(t_binary_stream *stream, const
         return PACKET_PROCESSOR_STATUS_FAILURE_NO_DATA;
     }
      const t_echo_request *request = buffer;
-    t_binary_stream_status status = stream->methods.write_unsigned_char(stream, request->identifier);
+    t_binary_stream_status status = stream->methods.write_unsigned_short(stream, request->identifier);
     if (binary_stream_status_is_failed(status)) {
         return PACKET_PROCESSOR_STATUS_FAILURE_SERIALIZE;
     }
-     status = stream->methods.write_unsigned_char(stream, request->sequence);
+     status = stream->methods.write_unsigned_short(stream, request->sequence);
     if (binary_stream_status_is_failed(status)) {
         return PACKET_PROCESSOR_STATUS_FAILURE_SERIALIZE;
     }

@@ -48,6 +48,7 @@ struct s_binary_stream {
         void (*reset)(t_binary_stream *stream);
         void (*print)(t_binary_stream *stream);
         t_binary_stream *(*copy)(t_binary_stream *stream);
+        t_binary_stream *(*slice)(t_binary_stream *stream, size_t start, size_t length);
 
         t_binary_stream_status (*write_char)(t_binary_stream *stream, int8_t value);
         t_binary_stream_status (*write_char_le)(t_binary_stream *stream, int8_t value);
@@ -154,6 +155,8 @@ t_binary_stream *create_binary_stream_with_capacity_and_max_capacity(size_t capa
  *         failure. Free it with binary_stream_free().
  */
 t_binary_stream *binary_stream_copy(t_binary_stream *stream);
+
+t_binary_stream *binary_stream_slice(t_binary_stream *stream, size_t start, size_t length);
 
 
 /**

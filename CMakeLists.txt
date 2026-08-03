@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.3)
+cmake_minimum_required(VERSION 3.0)
 project(ft_ping C)
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g3 -O0")

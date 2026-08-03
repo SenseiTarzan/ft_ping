@@ -28,6 +28,8 @@ typedef struct s_echo_request t_echo_request;
 
 typedef struct s_echo_reply t_echo_reply;
 
+typedef struct s_packet_network t_packet_network;
+
 typedef struct s_packet_processor t_packet_processor;
 
 #endif //FT_PING_TYPES_H

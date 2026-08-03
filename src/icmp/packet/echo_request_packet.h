@@ -10,8 +10,8 @@
 #include "../../packet_processors/packet_processors.h"
 struct s_echo_request {
     t_header_icmp packet_header;
-    uint8_t identifier;
-    uint8_t sequence;
+    uint16_t identifier;
+    uint16_t sequence;
 };
 
 /**
