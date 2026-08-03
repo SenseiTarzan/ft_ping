@@ -111,3 +111,40 @@ else ()
     message(WARNING "valgrind introuvable : les cibles valgrind_* ne sont pas generees")
 endif ()
 
+# ------------------------------------------------------------------
+# Funcheck (https://github.com/froz42/funcheck)
+# ------------------------------------------------------------------
+find_program(FUNCHECK_COMMAND NAMES funcheck HINTS "$ENV{HOME}/.local/funcheck/host")
+
+set(FUNCHECK_OPTIONS
+        --show-current-test
+        --track-allocations)
+
+if (FUNCHECK_COMMAND)
+    add_custom_target(funcheck_ft_ping
+            COMMAND ${FUNCHECK_COMMAND} ${FUNCHECK_OPTIONS} $<TARGET_FILE:ft_ping>
+            USES_TERMINAL
+            COMMENT "funcheck : ft_ping")
+    add_dependencies(funcheck_ft_ping ft_ping)
+
+    add_custom_target(funcheck_test_binary_stream
+            COMMAND ${FUNCHECK_COMMAND} ${FUNCHECK_OPTIONS} $<TARGET_FILE:test_binary_stream>
+            USES_TERMINAL
+            COMMENT "funcheck : test_binary_stream")
+    add_dependencies(funcheck_test_binary_stream test_binary_stream)
+
+    add_custom_target(funcheck_test_packet_processors
+            COMMAND ${FUNCHECK_COMMAND} ${FUNCHECK_OPTIONS} $<TARGET_FILE:test_packet_processors>
+            USES_TERMINAL
+            COMMENT "funcheck : test_packet_processors")
+    add_dependencies(funcheck_test_packet_processors test_packet_processors)
+
+    add_custom_target(funcheck)
+    add_dependencies(funcheck
+            funcheck_test_binary_stream
+            funcheck_test_packet_processors
+            funcheck_ft_ping)
+else ()
+    message(WARNING "funcheck introuvable : les cibles funcheck_* ne sont pas generees")
+endif ()
+
