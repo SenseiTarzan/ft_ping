@@ -8,10 +8,13 @@
 #include <stdint.h>
 #include "../binary_stream_icmp.h"
 #include "../../packet_processors/packet_processors.h"
+#include <sys/time.h>
 struct s_echo_request {
     t_header_icmp packet_header;
     uint16_t identifier;
     uint16_t sequence;
+    struct timeval timestamp;
+    char *payload;
 };
 
 /**
@@ -21,8 +24,7 @@ struct s_echo_request {
  * @return the request, or NULL on allocation failure. The caller owns it and
  *         must free() it.
  */
-t_echo_request *echo_request_new(uint8_t identifier, uint8_t sequence);
-
+t_echo_request *echo_request_new(uint8_t identifier, uint8_t sequence, char *payload);
 /**
  * Tell whether a request may be sent.
  * @param request request to check, NULL tolerated

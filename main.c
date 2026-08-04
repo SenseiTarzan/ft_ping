@@ -16,10 +16,11 @@
 
 int main(void) {
     init_packet_processors_icmp();
-    t_echo_request *packet = echo_request_new(5, 6);
+    t_echo_request *packet = echo_request_new(5, 6, ""); //TAILLE max est de 1480 octect
     if (packet == NULL) {
         return 1;
     }
+
     t_binary_stream *stream = create_binary_stream_with_capacity(sizeof(t_echo_request), BINARY_STREAM_ENDIAN_BIG);
     if (stream == NULL) {
         return 1;
@@ -40,7 +41,7 @@ int main(void) {
     struct sockaddr_in dest_addr;
     memset(&dest_addr, 0, sizeof(dest_addr));
     dest_addr.sin_family = AF_INET;
-    inet_pton(AF_INET, "8.8.8.8", &dest_addr.sin_addr);
+    inet_pton(AF_INET, "1.1.1.1", &dest_addr.sin_addr);
 
     // Envoi du paquet
     ssize_t sent = sendto(sockfd, stream->data, stream->capacity, 0,
@@ -52,32 +53,30 @@ int main(void) {
         printf("Paquet ICMP envoyé : %zd octets vers %s\n", sent, "8.8.8.8");
     }
 
-    uint8_t recv_buf[1500];
+    t_binary_stream *test = create_binary_stream_with_capacity(1500, BINARY_STREAM_ENDIAN_BIG);
     struct sockaddr_in from_addr;
     socklen_t from_len = sizeof(from_addr);
-    ssize_t n = recvfrom(sockfd, recv_buf, sizeof(recv_buf), 0,
+    test->methods.reset(test);
+    ssize_t n = recvfrom(sockfd, test->data, test->capacity, 0,
                              (struct sockaddr *)&from_addr, &from_len);
 
 
-    struct ip *ip_hdr = (struct ip *)recv_buf;
-    size_t ip_hdr_len = ip_hdr->ip_hl * 4;  // ip_hl en mots de 32 bits
+    struct iphdr *ip_hdr = (struct iphdr *)test->data;
+    size_t ip_hdr_len = ip_hdr->ihl * 4;  // ip_hl en mots de 32 bits
 
     // Vérifier que le protocole est bien ICMP
-    if (ip_hdr->ip_p != IPPROTO_ICMP) {
+    if (ip_hdr->protocol != IPPROTO_ICMP) {
         return 2;  // Ignorer les paquets non-ICMP
     }
+    test->index = ip_hdr_len;
 
-    // Pointer vers l'en-tête ICMP (après l'en-tête IP)
-    uint8_t *icmp_ptr = recv_buf + ip_hdr_len;
-    size_t icmp_len = n - ip_hdr_len;
-
-    t_binary_stream *test = create_binary_stream(icmp_ptr, icmp_len, BINARY_STREAM_ENDIAN_BIG);
     if (test == NULL) {
         return 1;
     }
     test->methods.print(test);
     t_echo_reply *packet_decode = packet_processor_deserializer(test);
     if (packet_decode == NULL) {
+        printf("aaaaaaaaaaaa\n");
         binary_stream_free(stream);
         binary_stream_free(test);
         return 1;

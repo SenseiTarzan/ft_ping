@@ -30,6 +30,7 @@ static t_packet_processor_status serializer_checksum_icmp(t_binary_stream *strea
     if (binary_stream_status_is_failed(status)) {
         return PACKET_PROCESSOR_STATUS_FAILURE_POST_SERIALIZE;
     }
+
     return PACKET_PROCESSOR_STATUS_OK;
 }
 
@@ -49,7 +50,7 @@ bool handler_echo_reply_packet(void *packet) {
         return false;
     }
     t_echo_reply *reply = packet;
-    printf("t_echo_reply_packet: echo reply received id=%u, seq=%u", reply->identifier, reply->sequence);
+    printf("t_echo_reply_packet: echo reply received id=%u, seq=%u payload=%s\n", reply->identifier, reply->sequence, reply->payload);
     return true;
 }
 

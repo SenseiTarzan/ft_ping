@@ -154,7 +154,8 @@ void *packet_processor_deserializer(t_binary_stream *stream) {
     if (stream == NULL || stream->data == NULL || stream->capacity == 0) {
         return NULL;
     }
-    const int id = stream->data[0];
+    const uint8_t *buffer = stream->methods.get_data(stream);
+    const int id = buffer[0];
     if (!is_valid_packet_processor_id(id)) {
         return NULL;
     }

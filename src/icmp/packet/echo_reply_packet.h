@@ -8,20 +8,14 @@
 #include <stdint.h>
 #include "../binary_stream_icmp.h"
 #include "../../packet_processors/packet_processors.h"
+#include <sys/time.h>
 struct s_echo_reply {
     t_header_icmp packet_header;
     uint16_t identifier;
     uint16_t sequence;
+    struct timeval timestamp;
+    char *payload;
 };
-
-/**
- * Allocate an echo reply, its ICMP header already filled in.
- * @param identifier identifier carried by the reply
- * @param sequence sequence number carried by the reply
- * @return the reply, or NULL on allocation failure. The caller owns it and
- *         must free() it.
- */
-t_echo_reply *echo_reply_new(uint8_t identifier, uint8_t sequence);
 
 /**
  * Tell whether a reply may be sent.
