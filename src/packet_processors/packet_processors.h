@@ -32,18 +32,25 @@ enum e_packet_network_type {
  */
 typedef enum e_packet_processor_status t_packet_processor_status;
 
-struct s_packet_processor {
-    t_packet_processor_status (*pre_serializer)(t_binary_stream *, const void *);
-    t_packet_processor_status (*serializer)(t_binary_stream *, const void *);
-    t_packet_processor_status (*post_serializer)(t_binary_stream *, const void *);
-    void * (*constructor)();
-    t_packet_processor_status (*pre_deserializer)(t_binary_stream *, void *);
-    t_packet_processor_status (*deserializer)(t_binary_stream *, void *);
-    void (*destructor)(void *);
-    bool (*handler)(void *);
+struct s_packet_pool {
+    t_packet_processor *processor;
+    int size;
 };
 
+struct s_packet_processor {
+    t_packet_processor_status (*pre_serializer)(t_binary_stream *, const void *packet);
+    t_packet_processor_status (*serializer)(t_binary_stream *, const void *packet);
+    t_packet_processor_status (*post_serializer)(t_binary_stream *, const void *packet);
+    void *this;
+    void * (*constructor)(void);
+    t_packet_processor_status (*pre_deserializer)(t_binary_stream *, void *packet);
+    t_packet_processor_status (*deserializer)(t_binary_stream *, void *packet);
+    void (*destructor)(void *packet);
+    bool (*handler)(void *this, void *packet, bool success);
+};
 
+t_packet_pool *packet_pool_new(int size);
+void packet_pool_free(t_packet_pool *pool);
 
 /**
  * Tell whether a status reports a failure.
@@ -66,23 +73,26 @@ bool packet_processor_status_is_success(t_packet_processor_status status);
  */
 const char *packet_processor_status_message(t_packet_processor_status status);
 
-bool is_valid_packet_processor_id(int id);
+bool is_valid_packet_processor_id(const t_packet_pool *pool, int id);
 
-void register_packet_processor(int id,
-    t_packet_processor_status (*pre_serializer)(t_binary_stream *, const void *),
-    t_packet_processor_status (*serializer)(t_binary_stream *, const void *),
-    t_packet_processor_status (*post_serializer)(t_binary_stream *, const void *),
-    void * (*constructor)(),
-    t_packet_processor_status (*pre_deserializer)(t_binary_stream *, void *),
-    t_packet_processor_status (*deserializer)(t_binary_stream *, void *),
-    void (*destructor)(void *),
-    bool (*handler)(void *));
-void unregister_packet_processor(int id);
+void register_packet_processor(const t_packet_pool *pool, int id,
+    t_packet_processor_status (*pre_serializer)(t_binary_stream *, const void *packet),
+    t_packet_processor_status (*serializer)(t_binary_stream *, const void *packet),
+    t_packet_processor_status (*post_serializer)(t_binary_stream *, const void *packet),
+    void *this,
+    void * (*constructor)(void),
+    t_packet_processor_status (*pre_deserializer)(t_binary_stream *, void *packet),
+    t_packet_processor_status (*deserializer)(t_binary_stream *, void *packet),
+    void (*destructor)(void *packet),
+    bool (*handler)(void *this, void *packet, bool success));
+void unregister_packet_processor(const t_packet_pool *pool,  int id);
 
-t_packet_processor* get_packet_processor(int id);
+t_packet_processor* get_packet_processor(const t_packet_pool *pool,int id);
+void packet_processor_set_this(const t_packet_pool *pool, const int id, void *this);
+void packet_processor_set_handler(const t_packet_pool *pool, const int id, bool (*handler)(void *this, void * packet, bool success));
 
-t_packet_processor_status packet_processor_serialize(int id, t_binary_stream *stream, const void *packet);
-void *packet_processor_deserializer(t_binary_stream *stream);
-bool packet_processor_handler(int id, void *packet);
+t_packet_processor_status packet_processor_serialize(const t_packet_pool *pool, int id, t_binary_stream *stream, const void *packet);
+void *packet_processor_deserializer(const t_packet_pool *pool, t_binary_stream *stream);
+bool packet_processor_handler(const t_packet_pool *pool, int id, void *packet);
 void packet_processor_destroy(const t_packet_processor *processor, void *packet);
 #endif //FT_PING_PACKET_PROCESSORS_H

@@ -20,6 +20,7 @@
  * struct.
  */
 
+typedef struct s_vector t_vector;
 typedef struct s_binary_stream t_binary_stream;
 
 typedef struct s_header_icmp t_header_icmp;
@@ -30,6 +31,8 @@ typedef struct s_echo_reply t_echo_reply;
 
 typedef struct s_packet_network t_packet_network;
 
+typedef struct s_packet_pool t_packet_pool;
 typedef struct s_packet_processor t_packet_processor;
+typedef struct s_ping t_ping;
 
 #endif //FT_PING_TYPES_H

@@ -17,7 +17,10 @@ add_executable(ft_ping main.c
         src/icmp/packet/echo_request_packet.c
         src/icmp/packet/echo_request_packet.h
         src/icmp/packet/echo_reply_packet.c
-        src/icmp/packet/echo_reply_packet.h)
+        src/icmp/packet/echo_reply_packet.h
+        src/ping/ping.c
+        src/ping/ping.h
+)
 
 add_executable(test_binary_stream EXCLUDE_FROM_ALL
         tests/test_binary_stream.c

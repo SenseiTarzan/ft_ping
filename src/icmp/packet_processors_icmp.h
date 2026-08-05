@@ -7,8 +7,8 @@
 
 #include "../packet_processors/packet_processors.h"
 
-void init_packet_processors_icmp(void);
+void init_packet_processors_icmp(const t_packet_pool *pool);
 
-bool packet_processor_icmp_handler(void *packet);
+bool packet_processor_icmp_handler(const t_packet_pool *pool, void *packet);
 
 #endif //FT_PING_PACKET_PROCESSORS_ICMP_H

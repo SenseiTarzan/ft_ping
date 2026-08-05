@@ -45,27 +45,18 @@ static t_packet_processor_status pre_deserializer_header_icmp(t_binary_stream *s
     return PACKET_PROCESSOR_STATUS_OK;
 }
 
-bool handler_echo_reply_packet(void *packet) {
-    if (packet == NULL) {
-        return false;
-    }
-    t_echo_reply *reply = packet;
-    printf("t_echo_reply_packet: echo reply received id=%u, seq=%u payload=%s\n", reply->identifier, reply->sequence, reply->payload);
-    return true;
-}
-
-bool packet_processor_icmp_handler(void *packet) {
+bool packet_processor_icmp_handler(const t_packet_pool *pool, void *packet) {
     if (packet == NULL) {
         return false;
     }
     const t_header_icmp *header = packet;
-    return packet_processor_handler(header->type, packet);
+    return packet_processor_handler(pool, header->type, packet);
 }
 
 
-void init_packet_processors_icmp(void) {
-    register_packet_processor(8, &serialize_header_icmp, &serializer_echo_request, &serializer_checksum_icmp, NULL,NULL, NULL, NULL, NULL);
-    register_packet_processor(0, NULL, NULL, NULL, &factory_echo_reply_packet, &pre_deserializer_header_icmp, &deserializer_echo_reply, &free, &handler_echo_reply_packet);
+void init_packet_processors_icmp(const t_packet_pool *pool) {
+    register_packet_processor(pool,8, &serialize_header_icmp, &serializer_echo_request, &serializer_checksum_icmp, NULL, NULL,NULL, NULL, NULL, NULL);
+    register_packet_processor(pool, 0, NULL, NULL, NULL, NULL, &factory_echo_reply_packet, &pre_deserializer_header_icmp, &deserializer_echo_reply, &free, NULL);
 }
 
 
