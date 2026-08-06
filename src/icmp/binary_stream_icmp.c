@@ -59,7 +59,6 @@ t_binary_stream_status binary_stream_icmp_write_checksum(t_binary_stream * strea
 
 t_binary_stream_status binary_stream_icmp_check_checksum(t_binary_stream * stream, size_t len) {
     uint16_t checksum = icmp_checksum(stream->data, len);
-    printf("check checksum: %u\n", checksum);
     if (checksum != 0) {
         return BINARY_STREAM_CORRUPT;
     }

@@ -14,17 +14,16 @@ struct s_echo_request {
     uint16_t identifier;
     uint16_t sequence;
     struct timeval timestamp;
-    char *payload;
 };
 
 /**
  * Allocate an echo request, its ICMP header already filled in.
  * @param identifier identifier carried by the request
  * @param sequence sequence number carried by the request
- * @return the request, or NULL on allocation failure. The caller owns it and
- *         must free() it.
+ * @return the request, or NULL on allocation failure or if the timestamp
+ *         could not be read. The caller owns it and must free() it.
  */
-t_echo_request *echo_request_new(uint8_t identifier, uint8_t sequence, char *payload);
+t_echo_request *echo_request_new(uint16_t identifier, uint8_t sequence);
 /**
  * Tell whether a request may be sent.
  * @param request request to check, NULL tolerated

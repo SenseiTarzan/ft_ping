@@ -14,7 +14,6 @@ struct s_echo_reply {
     uint16_t identifier;
     uint16_t sequence;
     struct timeval timestamp;
-    char *payload;
 };
 
 /**

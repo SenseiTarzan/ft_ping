@@ -9,6 +9,6 @@
 
 void init_packet_processors_icmp(const t_packet_pool *pool);
 
-bool packet_processor_icmp_handler(const t_packet_pool *pool, void *packet);
+bool packet_processor_icmp_handler(const t_packet_pool *pool, struct sockaddr *addr, struct iphdr *ip_hdr, void *packet);
 
 #endif //FT_PING_PACKET_PROCESSORS_ICMP_H

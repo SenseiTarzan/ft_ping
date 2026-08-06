@@ -5,6 +5,7 @@
 #ifndef FT_PING_PACKET_PROCESSORS_H
 #define FT_PING_PACKET_PROCESSORS_H
 #include <stdbool.h>
+#include <netinet/ip.h>
 
 #include "../types.h"
 
@@ -46,7 +47,7 @@ struct s_packet_processor {
     t_packet_processor_status (*pre_deserializer)(t_binary_stream *, void *packet);
     t_packet_processor_status (*deserializer)(t_binary_stream *, void *packet);
     void (*destructor)(void *packet);
-    bool (*handler)(void *this, void *packet, bool success);
+    bool (*handler)(void *this, struct sockaddr *addr, struct iphdr *ip_hdr, void *packet, bool success);
 };
 
 t_packet_pool *packet_pool_new(int size);
@@ -84,15 +85,15 @@ void register_packet_processor(const t_packet_pool *pool, int id,
     t_packet_processor_status (*pre_deserializer)(t_binary_stream *, void *packet),
     t_packet_processor_status (*deserializer)(t_binary_stream *, void *packet),
     void (*destructor)(void *packet),
-    bool (*handler)(void *this, void *packet, bool success));
+    bool (*handler)(void *this, struct sockaddr *addr, struct iphdr *ip_hdr,  void * packet, bool success));
 void unregister_packet_processor(const t_packet_pool *pool,  int id);
 
 t_packet_processor* get_packet_processor(const t_packet_pool *pool,int id);
 void packet_processor_set_this(const t_packet_pool *pool, const int id, void *this);
-void packet_processor_set_handler(const t_packet_pool *pool, const int id, bool (*handler)(void *this, void * packet, bool success));
+void packet_processor_set_handler(const t_packet_pool *pool, const int id, bool (*handler)(void *this, struct sockaddr *addr, struct iphdr *ip_hdr,  void * packet, bool success));
 
 t_packet_processor_status packet_processor_serialize(const t_packet_pool *pool, int id, t_binary_stream *stream, const void *packet);
 void *packet_processor_deserializer(const t_packet_pool *pool, t_binary_stream *stream);
-bool packet_processor_handler(const t_packet_pool *pool, int id, void *packet);
+bool packet_processor_handler(const t_packet_pool *pool, int id, struct sockaddr *addr, struct iphdr *ip_hdr,  void * packet);
 void packet_processor_destroy(const t_packet_processor *processor, void *packet);
 #endif //FT_PING_PACKET_PROCESSORS_H

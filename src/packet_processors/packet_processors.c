@@ -73,7 +73,7 @@ void register_packet_processor(const t_packet_pool *pool, const int id,
     t_packet_processor_status (*pre_deserializer)(t_binary_stream *, void *packet),
     t_packet_processor_status (*deserializer)(t_binary_stream *, void *packet),
     void (*destructor)(void *packet),
-    bool (*handler)(void *this, void * packet, bool success)) {
+    bool (*handler)(void *this, struct sockaddr *addr, struct iphdr *ip_hdr,  void * packet, bool success)) {
     if (!is_valid_packet_processor_id(pool, id)) {
         return;
     }
@@ -146,7 +146,7 @@ void packet_processor_set_this(const t_packet_pool *pool, const int id, void *th
     pool->processor[id].this = this;
 }
 
-void packet_processor_set_handler(const t_packet_pool *pool, const int id, bool (*handler)(void *this, void * packet, bool success)) {
+void packet_processor_set_handler(const t_packet_pool *pool, const int id, bool (*handler)(void *this, struct sockaddr *addr, struct iphdr *ip_hdr,  void * packet, bool success)) {
     if (!is_valid_packet_processor_id(pool, id)) {
         return;
     }
@@ -227,7 +227,7 @@ void *packet_processor_deserializer(const t_packet_pool *pool, t_binary_stream *
     return packet;
 }
 
-bool packet_processor_handler(const t_packet_pool *pool, const int id, void *packet) {
+bool packet_processor_handler(const t_packet_pool *pool, const int id, struct sockaddr *addr, struct iphdr *ip_hdr,  void *packet) {
     if (!is_valid_packet_processor_id(pool, id)) {
         return false;
     }
@@ -240,7 +240,7 @@ bool packet_processor_handler(const t_packet_pool *pool, const int id, void *pac
     }
     /* Le paquet appartient au module a partir d'ici : il est detruit que le
      * handler l'accepte ou non. */
-    const bool handled = packet_processor->handler(packet_processor->this, packet, packet != NULL);
+    const bool handled = packet_processor->handler(packet_processor->this, addr, ip_hdr,  packet, packet != NULL);
     packet_processor_destroy(packet_processor, packet);
     return handled;
 }

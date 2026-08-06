@@ -21,6 +21,7 @@ add_executable(ft_ping main.c
         src/ping/ping.c
         src/ping/ping.h
 )
+target_link_libraries(ft_ping m)
 
 add_executable(test_binary_stream EXCLUDE_FROM_ALL
         tests/test_binary_stream.c
@@ -146,10 +147,15 @@ set(FUNCHECK_OPTIONS
         --track-allocations)
 
 if (FUNCHECK_COMMAND)
+    # ft_ping exige un argument (adresse a pinguer) sinon il s'arrete des le
+    # message d'usage et funcheck n'a quasiment rien a tester. 127.0.0.1 ne
+    # depend d'aucun DNS/reseau externe ; la boucle s'arrete d'elle-meme apres
+    # 10 paquets, donc pas besoin d'envoyer Ctrl+C. Necessite d'etre lance en
+    # root (sockets ICMP bruts), par ex. via sudo cmake --build . --target funcheck_ft_ping.
     add_custom_target(funcheck_ft_ping
-            COMMAND ${FUNCHECK_COMMAND} ${FUNCHECK_OPTIONS} $<TARGET_FILE:ft_ping>
+            COMMAND ${FUNCHECK_COMMAND} ${FUNCHECK_OPTIONS} $<TARGET_FILE:ft_ping> 127.0.0.1
             USES_TERMINAL
-            COMMENT "funcheck : ft_ping")
+            COMMENT "funcheck : ft_ping 127.0.0.1")
     add_dependencies(funcheck_ft_ping ft_ping)
 
     add_custom_target(funcheck_test_binary_stream

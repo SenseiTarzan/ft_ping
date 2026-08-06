@@ -26,7 +26,16 @@ static t_packet_processor_status serializer_checksum_icmp(t_binary_stream *strea
     if (buffer == NULL) {
         return PACKET_PROCESSOR_STATUS_FAILURE_POST_SERIALIZE;
     }
-    const t_binary_stream_status status = binary_stream_icmp_write_checksum(stream, 2, stream->index);
+    t_binary_stream_status status;
+    ssize_t index = 64 - (ssize_t)stream->index;
+    while (index > 0) {
+        status = stream->methods.write_char(stream, 0);
+        if (binary_stream_status_is_failed(status)) {
+            return PACKET_PROCESSOR_STATUS_FAILURE_POST_SERIALIZE;
+        }
+        --index;
+    }
+    status =  binary_stream_icmp_write_checksum(stream, 2, stream->index);
     if (binary_stream_status_is_failed(status)) {
         return PACKET_PROCESSOR_STATUS_FAILURE_POST_SERIALIZE;
     }
@@ -45,12 +54,12 @@ static t_packet_processor_status pre_deserializer_header_icmp(t_binary_stream *s
     return PACKET_PROCESSOR_STATUS_OK;
 }
 
-bool packet_processor_icmp_handler(const t_packet_pool *pool, void *packet) {
+bool packet_processor_icmp_handler(const t_packet_pool *pool, struct sockaddr *addr, struct iphdr *ip_hdr, void *packet) {
     if (packet == NULL) {
         return false;
     }
     const t_header_icmp *header = packet;
-    return packet_processor_handler(pool, header->type, packet);
+    return packet_processor_handler(pool, header->type, addr, ip_hdr, packet);
 }
 
 
