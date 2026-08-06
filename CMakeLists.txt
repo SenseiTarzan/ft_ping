@@ -55,8 +55,22 @@ target_compile_options(test_packet_processors_san PRIVATE
         -Wall -Wextra -fsanitize=address,undefined -fno-omit-frame-pointer)
 target_link_options(test_packet_processors_san PRIVATE -fsanitize=address,undefined)
 
-add_custom_target(tests DEPENDS test_binary_stream test_packet_processors)
-add_custom_target(tests_san DEPENDS test_binary_stream_san test_packet_processors_san)
+add_executable(test_ping EXCLUDE_FROM_ALL
+        tests/test_ping.c
+        src/ping/ping.c
+        src/ping/ping.h)
+target_compile_options(test_ping PRIVATE -Wall -Wextra)
+
+add_executable(test_ping_san EXCLUDE_FROM_ALL
+        tests/test_ping.c
+        src/ping/ping.c
+        src/ping/ping.h)
+target_compile_options(test_ping_san PRIVATE
+        -Wall -Wextra -fsanitize=address,undefined -fno-omit-frame-pointer)
+target_link_options(test_ping_san PRIVATE -fsanitize=address,undefined)
+
+add_custom_target(tests DEPENDS test_binary_stream test_packet_processors test_ping)
+add_custom_target(tests_san DEPENDS test_binary_stream_san test_packet_processors_san test_ping_san)
 
 # ------------------------------------------------------------------
 # Valgrind
@@ -83,6 +97,7 @@ set(MEMORYCHECK_SUPPRESSIONS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/valgrind.supp")
 include(CTest)
 add_test(NAME binary_stream COMMAND test_binary_stream)
 add_test(NAME packet_processors COMMAND test_packet_processors)
+add_test(NAME ping COMMAND test_ping)
 
 if (VALGRIND_COMMAND)
     # Une cible par binaire : elles apparaissent telles quelles dans le
@@ -105,10 +120,17 @@ if (VALGRIND_COMMAND)
             COMMENT "memcheck : test_packet_processors")
     add_dependencies(valgrind_test_packet_processors test_packet_processors)
 
+    add_custom_target(valgrind_test_ping
+            COMMAND ${VALGRIND_COMMAND} ${VALGRIND_OPTIONS} $<TARGET_FILE:test_ping>
+            USES_TERMINAL
+            COMMENT "memcheck : test_ping")
+    add_dependencies(valgrind_test_ping test_ping)
+
     add_custom_target(valgrind)
     add_dependencies(valgrind
             valgrind_test_binary_stream
             valgrind_test_packet_processors
+            valgrind_test_ping
             valgrind_ft_ping)
 else ()
     message(WARNING "valgrind introuvable : les cibles valgrind_* ne sont pas generees")
@@ -142,10 +164,17 @@ if (FUNCHECK_COMMAND)
             COMMENT "funcheck : test_packet_processors")
     add_dependencies(funcheck_test_packet_processors test_packet_processors)
 
+    add_custom_target(funcheck_test_ping
+            COMMAND ${FUNCHECK_COMMAND} ${FUNCHECK_OPTIONS} $<TARGET_FILE:test_ping>
+            USES_TERMINAL
+            COMMENT "funcheck : test_ping")
+    add_dependencies(funcheck_test_ping test_ping)
+
     add_custom_target(funcheck)
     add_dependencies(funcheck
             funcheck_test_binary_stream
             funcheck_test_packet_processors
+            funcheck_test_ping
             funcheck_ft_ping)
 else ()
     message(WARNING "funcheck introuvable : les cibles funcheck_* ne sont pas generees")

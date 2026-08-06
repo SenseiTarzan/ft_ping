@@ -34,5 +34,6 @@ typedef struct s_packet_network t_packet_network;
 typedef struct s_packet_pool t_packet_pool;
 typedef struct s_packet_processor t_packet_processor;
 typedef struct s_ping t_ping;
+typedef struct s_sequence_ping_history t_sequence_ping_history;
 
 #endif //FT_PING_TYPES_H
