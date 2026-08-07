@@ -12,7 +12,6 @@
 #include "src/icmp/packet_processors_icmp.h"
 #include "src/icmp/packet/echo_request_packet.h"
 #include "src/packet_processors/packet_processors.h"
-#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
