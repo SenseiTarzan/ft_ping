@@ -22,6 +22,8 @@
 #include <getopt.h>
 #include <netdb.h>
 
+#include "src/constant.h"
+
 #define PING_ICMP_PACKET_SIZE 64
 #define PING_ICMP_HEADER_SIZE 8
 #define PING_IP_HEADER_SIZE 20
@@ -106,41 +108,60 @@ static int resolve_address(const char *host, int family, struct addrinfo **res) 
 
     const int status = getaddrinfo(host, NULL, &hints, res);
     if (status != 0) {
-        fprintf(stderr, "%s: %s\n", host, gai_strerror(status));
+        fprintf(stderr, "ft_ping: %s: %s\n", host, gai_strerror(status));
         return -1;
     }
     return 0;
 }
 
 static void print_usage(const char *prog) {
-    printf("Usage: %s [-v] [-h] <IP address>\n", prog);
+    printf("Usage: %s [-v] [-h] [-V] <destination>\n", prog);
+}
+
+static void print_help(const char *prog) {
+    printf("\nUsage\n  %s [options] <destination>\n", prog);
+    printf("\nOptions:\n");
+    printf("  <destination>      DNS name or IP address\n");
+    printf("  -h                 print help and exit\n");
+    printf("  -v                 verbose output\n");
+    printf("  -V                 print version and exit\n");
+}
+
+static void print_version(void) {
+    printf("ft_ping from 42-post-common-core %s\n", PING_VERSION);
 }
 
 static struct option long_options[] = {
-  {"verbose", no_argument, NULL, 'v'},
-  {"help",    no_argument, NULL, 'h'},
-  {NULL, 0, NULL, 0}
+  {.name = "verbose", .has_arg = no_argument, .flag = NULL, .val = 'v'},
+  {.name = "help", .has_arg = no_argument, .flag = NULL, .val = '?'},
+  {.name = "version", .has_arg = no_argument, .flag = NULL, .val = 'V'},
+  {.name = NULL, .has_arg = 0, .flag = NULL, .val = 0}
 };
 
 static void populate_option(t_ping *ping, int argc, char *argv[]) {
       int opt;
-      while ((opt = getopt_long(argc, argv, "vh", long_options, NULL)) != -1) {
+      while ((opt = getopt_long(argc, argv, "Vv?", long_options, NULL)) != -1) {
           switch (opt) {
               case 'v':
                   ping->option |= PING_OPTION_VERBOSE;
                   break;
-              case 'h':
-                  print_usage(argv[0]);
+              case '?':
+                  print_help(argv[0]);
+                  exit(2);
+                  break;
+              case 'V':
+                  print_version();
                   exit(0);
+                  break;
               default:
                   print_usage(argv[0]);
-                  exit(1);
+                  exit(2);
           }
       }
 
     if (optind >= argc) {
-        print_usage(argv[0]);
-        exit(1);
+        fprintf(stderr, "ft_ping: usage error: Adresse de destination requise\n");
+        exit(2);
     }
 }
 
@@ -203,7 +224,7 @@ int main(int argc, char *argv[]) {
         binary_stream_free(ping.send);
         binary_stream_free(ping.receive);
         packet_pool_free(pool);
-        return 1;
+        return 2;
     }
 
     struct addrinfo *rp = NULL;

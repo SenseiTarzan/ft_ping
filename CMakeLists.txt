@@ -20,6 +20,7 @@ add_executable(ft_ping main.c
         src/icmp/packet/echo_reply_packet.h
         src/ping/ping.c
         src/ping/ping.h
+        src/constant.h
 )
 target_link_libraries(ft_ping m)
 
