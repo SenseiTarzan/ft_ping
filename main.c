@@ -342,6 +342,10 @@ int main(int argc, char *argv[]) {
                 continue;
             }
 
+            if (memcmp(&from_addr, rp->ai_addr ,from_len) != 0) {
+                continue;
+            }
+
             struct iphdr *ip_hdr = (struct iphdr *)ping.receive->data;
             if (ip_hdr->protocol != IPPROTO_ICMP) {
                 continue;
